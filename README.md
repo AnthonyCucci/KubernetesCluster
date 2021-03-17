@@ -40,7 +40,27 @@ My network is split up in the 10.10.10.0 subnet and split the names by network c
 
 <img src="https://user-images.githubusercontent.com/47187712/110851715-657bc600-827f-11eb-8bfa-5d5ef6eed73d.png">
 
+### RPI SETUP:
 
+After the Pi's have booted up for the first time, we need to configure the Hostname and change the default passwords.
+
+Run: <code> sudo raspi-config </code>
+
+Set the new password, enable SSH, and change the hostname to your preference. Mine will be ROY, GEE, and BIV to easily distungush the RPI's based on Ethernet Cable.
+
+### Installing K3s Software:
+
+I have decided to work with k3s, which is a lightweight implementation of kubernetes. This allows for more resources on these already limited RPI 3's.
+
+On the master node (ROY) I ran:
+
+<code> curl -sfL https://get.k3s.io | sh -</code>
+
+On each of the worker nodes (GEE,BIV) I have ran:
+
+<code> curl -sfL https://get.k3s.io | K3S_URL=https://10.10.10.6:6443 K3S_TOKEN=nodetoken sh - </code>
+
+Running <code> kubectl get nodes </code> You should see all 3 nodes connected!
 
 ### Changelog:
 1.0.0
@@ -54,4 +74,10 @@ My network is split up in the 10.10.10.0 subnet and split the names by network c
         
 1.1.1
         Added network diagram
+        
         Added More printing information
+        
+1.1.2
+        Added RPI SETUP
+        
+        Added Installing K3s Software
