@@ -42,11 +42,28 @@ My network is split up in the 10.10.10.0 subnet and split the names by network c
 
 ### RPI SETUP:
 
-After the Pi's have booted up for the first time, we need to configure the Hostname and change the default passwords.
+After the Pi's have booted up for the first time, I needed to configure the Hostname and change the default passwords.
 
 Run: <code> sudo raspi-config </code>
 
-Set the new password, enable SSH, and change the hostname to your preference. Mine will be ROY, GEE, and BIV to easily distungush the RPI's based on Ethernet Cable.
+Set the new password, enable SSH, Change the GPU memory from 64=>16 and change the hostname to your preference. Mine will be ROY, GEE, and BIV to easily distungush the RPI's based on Ethernet Cable.
+
+I have also configured each PI with a static IP:
+
+In /etc/dhcpcd.conf, ROY example:
+<code>      
+
+static ip_address=10.10.10.6/24
+
+static routers=10.10.10.1
+
+static domain_name_servers=10.10.10.1 8.8.8.8
+
+</code>
+
+I also added in the /boot/cmdline.txt so we can run the k3s containers:
+
+<code> cgroup_enable=cpuset cgroup_memory=1 cgroup_enable=memory </code>
 
 ### Installing K3s Software:
 
@@ -56,11 +73,53 @@ On the master node (ROY) I ran:
 
 <code> curl -sfL https://get.k3s.io | sh -</code>
 
+Then you can find the node token by entering:
+
+<code> sudo cat /var/lib/rancher/k3s/server/node-token </code>
+
+
 On each of the worker nodes (GEE,BIV) I have ran:
 
 <code> curl -sfL https://get.k3s.io | K3S_URL=https://10.10.10.6:6443 K3S_TOKEN=nodetoken sh - </code>
 
 Running <code> kubectl get nodes </code> You should see all 3 nodes connected!
+
+![image](https://user-images.githubusercontent.com/47187712/112377362-05901100-8cbc-11eb-8123-fd77a95a38cc.png)
+
+### Package Manager
+
+I installed Helm (https://helm.sh/) a package manager for Kubernetes containers.
+Following their documentation:
+
+<code>
+        
+$ curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
+
+$ chmod 700 get_helm.sh
+
+$ ./get_helm.sh
+
+</code>
+
+This allows us to easily install premade containers on all of our nodes. 
+
+### Monitoring the cluster
+
+To get better idea of how I use my resources, I am going to install prometheus, A time series database and metrics collector. then I will report this information via Grafana a dashboarding tool.
+
+Thankfully with helm there is a pre-configured promethus and grafana container that we can deploy.
+
+<code>
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+        
+helm repo add stable https://kubernetes-charts.storage.googleapis.com
+        
+helm repo update
+
+helm install stable/prometheus-operator --set prometheusOperator.createCustomResource=false --generate-name --namespace monitor
+</code>
+
+
 
 ### Changelog:
 1.0.0
@@ -81,3 +140,13 @@ Running <code> kubectl get nodes </code> You should see all 3 nodes connected!
         Added RPI SETUP
         
         Added Installing K3s Software
+        
+1.1.3
+        Added Kubectl photos
+        
+        Added special RPI instruction so I could install k3s.
+        
+1.2
+        Added Package Manager
+        
+        Added Monitoring the cluster
