@@ -116,10 +116,28 @@ helm repo add stable https://kubernetes-charts.storage.googleapis.com
         
 helm repo update
 
-helm install stable/prometheus-operator --set prometheusOperator.createCustomResource=false --generate-name --namespace monitor
+kubectl create ns monitoring
+
+sudo -E helm install prometheus prometheus-community/kube-prometheus-stack -n monitoring
 </code>
 
+Afterwards when running <code> sudo kubectl get pods -n monitoring </code>
 
+![image](https://user-images.githubusercontent.com/47187712/113207968-46999f80-923f-11eb-83a1-03c7b39114bf.png)
+
+We can now see the pods are up and running and we are collecting metrics on our server!
+
+in order to view these pods outside of the pods network we have to portfoward to the main node and then we can view it. 
+<code> sudo kubectl port-forward -n monitoring my-kube-prometheus-stack-grafana-5b9645d744-l5cfs --address 0.0.0.0 3000 </code>
+
+I can go to my web browser to 10.10.10.6:3000 and the login page will be displayed
+
+Credentials are by default admin/admin
+
+<img src="https://user-images.githubusercontent.com/47187712/113209394-03d8c700-9241-11eb-8c32-afac895f8464.png" width="300" height="300">
+
+
+It also comes with a few different premade dashboard to see activity on each pod.
 
 ### Changelog:
 1.0.0
@@ -150,3 +168,5 @@ helm install stable/prometheus-operator --set prometheusOperator.createCustomRes
         Added Package Manager
         
         Added Monitoring the cluster
+1.2.1
+        Added to monitoring the cluster with pod info and Grafana
